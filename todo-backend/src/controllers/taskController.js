@@ -27,37 +27,56 @@ const getTask = async (req, res) => {
 
 // Agregar una nueva tarea
 const addTask = async (req, res) => {
-    const { title, status } = req.body;
+    const { title, description, status } = req.body;
 
-    if (!title || !status) {
-        return res.status(400).json({ message: 'El título y el estado son obligatorios' });
+    if (!title) {
+        return res.status(400).json({ message: 'El título es obligatorio' });
     }
 
     try {
-        const newTask = await taskModel.createTask({ title, status, user_id: req.user.id });
+        const newTask = await taskModel.createTask({
+            title,
+            description: description || "No especificada",
+            status: status || "Pendiente",
+            user_id: req.user.id
+        });
         res.status(201).json(newTask);
     } catch (error) {
-        console.error('Error al crear la tarea:', error);
+        console.error(error);
         res.status(500).json({ message: 'Error al crear la tarea' });
     }
 };
 
+
 // Actualizar una tarea existente
 const updateTask = async (req, res) => {
-    try {
-        const task = await taskModel.getTaskByIdAndUserId(req.params.id, req.user.id);
+    const { title, description, status } = req.body;
+    const taskId = req.params.id;
+    const userId = req.user.id;
 
-        if (!task) {
+    console.log("Recibiendo datos en backend:", { taskId, userId, title, description, status });
+
+    try {
+        const [result] = await pool.query(
+            'UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ? AND user_id = ?',
+            [title, description || null, status, taskId, userId]
+        );
+
+        if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Tarea no encontrada o no pertenece al usuario' });
         }
 
-        const updatedTask = await taskModel.updateTask(req.params.id, req.body);
-        res.json(updatedTask);
+        res.json({ id: taskId, title, description, status });
     } catch (error) {
-        console.error('Error al actualizar la tarea:', error);
+        console.error("Error en el servidor:", error);
         res.status(500).json({ message: 'Error al actualizar la tarea' });
     }
 };
+
+
+
+
+
 
 // Eliminar una tarea
 const deleteTask = async (req, res) => {
