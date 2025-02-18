@@ -22,6 +22,11 @@ app.use('/api/users', userRoutes);
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+app.get('/api/ping', (req, res) => {
+    res.status(200).send('pong');
+});
+
+
 
 // Inicio del servidor
 const PORT = process.env.PORT || 5000;

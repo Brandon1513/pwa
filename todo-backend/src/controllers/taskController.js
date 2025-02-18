@@ -1,5 +1,5 @@
 const taskModel = require('../models/taskModel');
-
+const pool = require('../config/db');
 // Obtener todas las tareas por ID de usuario
 const getAllTasks = async (req, res) => {
     try {
@@ -62,15 +62,20 @@ const updateTask = async (req, res) => {
             [title, description || null, status, taskId, userId]
         );
 
+        console.log("Resultado SQL:", result);
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Tarea no encontrada o no pertenece al usuario' });
         }
 
         res.json({ id: taskId, title, description, status });
     } catch (error) {
-        console.error("Error en el servidor:", error);
-        res.status(500).json({ message: 'Error al actualizar la tarea' });
+        console.error("⚠️ Error en el servidor:", error);
+        res.status(500).json({ message: 'Error al actualizar la tarea', error: error.message });
     }
+
+
+
 };
 
 

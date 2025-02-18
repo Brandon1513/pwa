@@ -25,17 +25,19 @@ const createTask = async ({ title, description, status, user_id }) => {
 };
 
 
-const updateTask = async (taskId, task) => {
-    const { title, description, status } = task;
+const updateTask = async (taskId, task) => { 
+    const { title, description = null, status } = task;
 
-    // Ejecutar la consulta SQL con descripción incluida
     await pool.query(
         'UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?',
-        [title, description || null, status, taskId]
+        [title, description || null, status, taskId] // ✅ Correcto, description se puede enviar como null
     );
 
     return { id: taskId, title, description, status };
 };
+
+
+
 
 
 const deleteTask = async (taskId) => {
